@@ -1,40 +1,32 @@
-import "../global.css";
-import { Slot, Stack, Tabs } from "expo-router";
-import AntDesign from "@expo/vector-icons/AntDesign";
+import React from 'react'
+import {Stack} from "expo-router";
+import {useAuth} from "@clerk/clerk-expo";
+import {ActivityIndicator, View} from "react-native";
 
-export default function Layout() {
+function Layout() {
+    const {isLoaded, isSignedIn, userId, sessionId, getToken} = useAuth();
+
+    if (!isLoaded) {
+        return (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color="#0000ff"/>
+            </View>
+        )
+    }
+
+    //if signed in, show the tabs.
+    //if not signed in, then prompt them to sign in or sign up
     return (
-        <Tabs>
-            <Tabs.Screen
-                name="index"
-                options={{
-                    title: "Home",
-                    headerShown: false,
-                    tabBarIcon: ({ color, size }) => (
-                        <AntDesign name="home" color={color} size={size} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="profile"
-                options={{
-                    title: "Profile",
-                    headerShown: false,
-                    tabBarIcon: ({ color, size }) => (
-                        <AntDesign name="user" color={color} size={size} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="history"
-                options={{
-                    title: "History",
-                    headerShown: false,
-                    tabBarIcon: ({ color, size }) => (
-                        <AntDesign name="clockcircle" color={color} size={size} />
-                    ),
-                }}
-            />
-        </Tabs>
-    );
+        <Stack>
+            <Stack.Protected guard={isSignedIn}>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false}}/>
+            </Stack.Protected>
+
+            <Stack.Protected guard={!isSignedIn}>
+                <Stack.Screen name='sign-in' options={{ headerShown: false}}/>
+                <Stack.Screen name='sign-up' options={{ headerShown: false}}/>
+            </Stack.Protected>
+        </Stack>
+    )
 }
+export default Layout
